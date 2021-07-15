@@ -29,6 +29,7 @@ const cssRules = [
 
 
 module.exports = ({ production } = {}, {extractCss, analyze, tests, hmr, port, host } = {}) => ({
+  target: ["web", "es5"],
   resolve: {
     extensions: ['.ts', '.js'],
     modules: [srcDir, 'node_modules'],
@@ -196,14 +197,14 @@ module.exports = ({ production } = {}, {extractCss, analyze, tests, hmr, port, h
     port: port || project.platform.port,
     host: host
   },
-  devtool: production ? 'nosources-source-map' : 'cheap-module-eval-source-map',
+  devtool: production ? undefined : 'eval-cheap-module-source-map',
   module: {
     rules: [
       // CSS required in JS/TS files should use the style-loader that auto-injects it into the website
       // only when the issuer is a .js/.ts file, so the loaders are not applied inside html templates
       {
         test: /\.css$/i,
-        issuer: [{ not: [{ test: /\.html$/i }] }],
+        issuer: { not: /\.html$/i },
         use: extractCss ? [{
           loader: MiniCssExtractPlugin.loader
         }, ...cssRules
@@ -211,7 +212,7 @@ module.exports = ({ production } = {}, {extractCss, analyze, tests, hmr, port, h
       },
       {
         test: /\.css$/i,
-        issuer: [{ test: /\.html$/i }],
+        issuer: /\.html$/i,
         // CSS required in templates cannot be extracted safely
         // because Aurelia would try to require it again in runtime
         use: cssRules
